@@ -1,10 +1,10 @@
 "use strict";
-const crypto = require("sudox-crypto-nodejs");
+const scrypto = require("scrypto-nodejs");
 
 const _PACK_NAME = "hsk";
 
 const _OK = Buffer.from("ok");
-const _ECDSA_PRIVATE_KEY = crypto.ECDSA.parseKey(__dirname + "/../keys/ecdsa-private.key", "private");
+const _ECDSA_PRIVATE_KEY = scrypto.ECDSA.parseKey(__dirname + "/../keys/ecdsa-private.key", "private");
 
 /**
  * @param {NodeJS.EventEmitter} events
@@ -23,8 +23,8 @@ function Handshake(events, tcpSocket) {
  * @returns {Handshake}
  */
 Handshake.prototype._doHandshake = function (clientPublicKey) {
-    let publicKey = crypto.ECDH.start();
-    let secretKey = crypto.ECDH.finish(clientPublicKey);
+    let ecdh = new scrypto.ECDH();
+    let secretKey = ecdh.computeSecretKey(clientPublicKey);
 
     if (!secretKey) {
         this._tcpSocket.destroy();
@@ -32,8 +32,10 @@ Handshake.prototype._doHandshake = function (clientPublicKey) {
         return this;
     }
 
-    let okHmac = crypto.HMAC.compute(_OK, secretKey);
-    let publicKeySign = crypto.ECDSA.compute(publicKey, _ECDSA_PRIVATE_KEY);
+    let okHmac = scrypto.HMAC.compute(_OK, secretKey);
+
+    let publicKey = ecdh.getPublicKey();
+    let publicKeySign = scrypto.ECDSA.compute(publicKey, _ECDSA_PRIVATE_KEY);
 
     this._events.emit("packs:write", _PACK_NAME, publicKey, publicKeySign, okHmac);
     this._events.emit("managers:upgrade", secretKey);

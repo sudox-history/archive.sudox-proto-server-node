@@ -1,5 +1,5 @@
 "use strict";
-const crypto = require("sudox-crypto-nodejs");
+const scrypto = require("scrypto-nodejs");
 const Queue = require("../utils/queue");
 const serialization = require("../utils/serialization");
 
@@ -27,15 +27,15 @@ function Messaging(events, tcpSocket) {
  * @returns {Messaging}
  */
 Messaging.prototype._read = function (payload, payloadHMAC, iv) {
-    if (!crypto.HMAC.verify(payload, this._secretKey, payloadHMAC)) {
+    if (!scrypto.HMAC.verify(payload, this._secretKey, payloadHMAC)) {
         this._tcpSocket.destroy();
 
         return this;
     }
 
     try {
-        let messageBuf = crypto.AES.decrypt(payload, this._secretKey, iv);
-        messageBuf = crypto.utils.salt.remove(messageBuf);
+        let messageBuf = scrypto.AES.decrypt(payload, this._secretKey, iv);
+        messageBuf = scrypto.utils.salt.remove(messageBuf);
 
         // noinspection ES6ConvertVarToLetConst
         var message = serialization.deserialize(messageBuf, false);
@@ -59,12 +59,12 @@ Messaging.prototype._write = function (message) {
     }
 
     let messageBuf = serialization.serialize(message, false);
-    messageBuf = crypto.utils.salt.add(messageBuf);
+    messageBuf = scrypto.utils.salt.add(messageBuf);
 
-    let iv = crypto.utils.rand.genBuf(16);
+    let iv = scrypto.utils.rand.genBuf(16);
 
-    let payload = crypto.AES.encrypt(messageBuf, this._secretKey, iv);
-    let payloadHMAC = crypto.HMAC.compute(payload, this._secretKey);
+    let payload = scrypto.AES.encrypt(messageBuf, this._secretKey, iv);
+    let payloadHMAC = scrypto.HMAC.compute(payload, this._secretKey);
 
     this._events.emit("packs:write", _PACK_NAME, payload, payloadHMAC, iv);
 
