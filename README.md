@@ -1,2 +1,2 @@
-# Sudox Proto (Node.js server)
-Light and protected sudox protocol for node.js server
+# Sudox Proto (Node.js Server-side)
+Protocol server-side for node.js

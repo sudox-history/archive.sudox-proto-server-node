@@ -3,23 +3,25 @@ const EventEmitter = require("events");
 const Handshake = require("./managers/handshake");
 const Messaging = require("./managers/messaging");
 const Ping = require("./managers/ping");
-const TCPDuplexer = require("./net/tcp-duplexer");
+const TCPDuplexer = require("./tcp/tcp-duplexer");
 
 /**
  * @param {module:net.Socket} tcpSocket
- * @extends {NodeJS.EventEmitter}
  * @constructor
+ * @extends {NodeJS.EventEmitter}
  */
 function ProtoSocket(tcpSocket) {
+    // Extends EventEmitter
+    EventEmitter.call(this);
     this._tcpSocket = tcpSocket;
 
-    this._events = new EventEmitter();
+    let tcpDuplexer = new TCPDuplexer(tcpSocket);
 
-    new Handshake(this._events, tcpSocket);
-    new Messaging(this._events, tcpSocket);
-    new Ping(this._events, tcpSocket);
+    this._handshake = new Handshake(tcpSocket, tcpDuplexer);
+    this._messaging = new Messaging(tcpSocket, tcpDuplexer, this._handshake);
 
-    new TCPDuplexer(this._events, tcpSocket);
+    // noinspection JSUnusedGlobalSymbols
+    this._ping = new Ping(tcpSocket, tcpDuplexer);
 
     this._setHandlers();
 }
@@ -29,7 +31,7 @@ function ProtoSocket(tcpSocket) {
  * @returns {ProtoSocket}
  */
 ProtoSocket.prototype.write = function (...message) {
-    this._events.emit("messages:write", message);
+    this._messaging.write(message);
 
     return this;
 };
@@ -46,14 +48,43 @@ ProtoSocket.prototype.close = function () {
 /**
  * @returns {ProtoSocket}
  */
+ProtoSocket.prototype._onUpgrade = function () {
+    this.emit("upgrade");
+
+    return this;
+};
+
+/**
+ * @param {*[]} message
+ * @returns {ProtoSocket}
+ */
+ProtoSocket.prototype._onMessage = function (message) {
+    this.emit.apply(this, message);
+
+    return this;
+};
+
+/**
+ * @returns {ProtoSocket}
+ */
+ProtoSocket.prototype._onClose = function () {
+    this.emit("close");
+
+    return this;
+};
+
+/**
+ * @returns {ProtoSocket}
+ */
 ProtoSocket.prototype._setHandlers = function () {
-    // noinspection JSCheckFunctionSignatures
-    this._events
-        .on("messages:new", message => this.emit(...message))
-        .on("managers:upgrade", () => this.emit("upgrade"));
+    this._handshake
+        .once("upgrade", this._onUpgrade.bind(this));
+
+    this._messaging
+        .on("message", this._onMessage.bind(this));
 
     this._tcpSocket
-        .on("close", () => this.emit("close"))
+        .on("close", this._onClose.bind(this))
 
         // Do nothing because we just avoid exception
         .on("error", () => null);

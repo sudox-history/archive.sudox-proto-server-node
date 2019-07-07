@@ -1,10 +1,11 @@
 {
   "name": "sproto-nodejs-server",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "main": "index.js",
   "author": "undefined7887",
   "license": "MIT",
   "dependencies": {
-    "scrypto-nodejs": "https://09fa46afeec8bd8bb12c27811c6155a9117ac66b:x-oauth-basic@github.com/undefined7887/scrypto-nodejs.git"
+    "scrypto-nodejs": "https://09fa46afeec8bd8bb12c27811c6155a9117ac66b:x-oauth-basic@github.com/undefined7887/scrypto-nodejs.git",
+    "snotation-nodejs": "https://09fa46afeec8bd8bb12c27811c6155a9117ac66b:x-oauth-basic@github.com/undefined7887/snotation-nodejs.git"
   }
 }
