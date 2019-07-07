@@ -1,4 +1,5 @@
 "use strict";
+const EventEmitter = require("events");
 const snotation = require("snotation-nodejs");
 const Queue = require("../utils/queue");
 
@@ -99,5 +100,8 @@ TCPDuplexer.prototype._setHandlers = function () {
 
     return this;
 };
+
+// Extends EventEmitter
+Object.setPrototypeOf(TCPDuplexer.prototype, EventEmitter.prototype);
 
 module.exports = TCPDuplexer;
