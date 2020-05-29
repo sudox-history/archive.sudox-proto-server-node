@@ -1,11 +1,11 @@
 {
-  "name": "sproto-server-node",
+  "name": "sudox-proto-server-node",
   "version": "4.2.0",
   "main": "index.js",
   "author": "undefined7887",
   "license": "MIT",
   "dependencies": {
-    "scrypto-node": "https://09fa46afeec8bd8bb12c27811c6155a9117ac66b:x-oauth-basic@github.com/undefined7887/scrypto-node.git",
-    "snotation-node": "https://09fa46afeec8bd8bb12c27811c6155a9117ac66b:x-oauth-basic@github.com/undefined7887/snotation-node.git"
+    "sudox-crypto-node": "https://github.com/undefined7887/sudox-crypto-node.git",
+    "sudox-notation-node": "https://github.com/undefined7887/sudox-notation-node.git"
   }
 }

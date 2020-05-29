@@ -1,11 +1,11 @@
 "use strict";
 const EventEmitter = require("events");
-const scrypto = require("scrypto-nodejs");
+const crypto = require("sudox-crypto-node");
 
 const _PACK_NAME = "hsk";
 
 const _OK = Buffer.from("ok");
-const _ECDSA_PRIVATE_KEY = scrypto.ECDSA.parseKey(__dirname + "/../keys/ecdsa-private.key", "private");
+const _ECDSA_PRIVATE_KEY = crypto.ECDSA.parseKey(__dirname + "/../keys/ecdsa-private.key", "private");
 
 /**
  * @param {module:net.Socket} tcpSocket
@@ -28,8 +28,8 @@ function Handshake(tcpSocket, tcpDuplexer) {
  * @returns {Handshake}
  */
 Handshake.prototype._onPack = function (clientPublicKey) {
-    let {index, publicKey} = scrypto.ECDH.start();
-    let secretKey = scrypto.ECDH.finish(index, clientPublicKey);
+    let {index, publicKey} = crypto.ECDH.start();
+    let secretKey = crypto.ECDH.finish(index, clientPublicKey);
 
     if (!secretKey) {
         this._tcpSocket.destroy();
@@ -37,8 +37,8 @@ Handshake.prototype._onPack = function (clientPublicKey) {
         return this;
     }
 
-    let okHmac = scrypto.HMAC.compute(_OK, secretKey);
-    let publicKeySign = scrypto.ECDSA.compute(publicKey, _ECDSA_PRIVATE_KEY);
+    let okHmac = crypto.HMAC.compute(_OK, secretKey);
+    let publicKeySign = crypto.ECDSA.compute(publicKey, _ECDSA_PRIVATE_KEY);
 
     this._tcpDuplexer.write(_PACK_NAME, publicKey, publicKeySign, okHmac);
 

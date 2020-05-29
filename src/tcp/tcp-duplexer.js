@@ -1,6 +1,6 @@
 "use strict";
 const EventEmitter = require("events");
-const snotation = require("snotation-nodejs");
+const notation = require("sudox-notation-node");
 const Queue = require("../utils/queue");
 
 const _PACK_HEAD_LEN = 3;
@@ -31,7 +31,7 @@ TCPDuplexer.prototype.write = function (...pack) {
         return this;
     }
 
-    let packBuf = snotation.serialize(pack, _PACK_HEAD_LEN);
+    let packBuf = notation.serialize(pack, _PACK_HEAD_LEN);
     packBuf.writeUIntLE(packBuf.length - _PACK_HEAD_LEN, 0, _PACK_HEAD_LEN);
 
     this._canWrite = this._tcpSocket.write(packBuf);
@@ -70,7 +70,7 @@ TCPDuplexer.prototype._onReadable = function () {
             let pack;
 
             try {
-                pack = snotation.deserialize(packBodyBuf);
+                pack = notation.deserialize(packBodyBuf);
             } catch (e) {
                 continue;
             }
